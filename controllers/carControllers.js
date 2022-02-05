@@ -2,9 +2,7 @@ import asyncHandler from 'express-async-handler'
 import ErrorResponse from '../utils/errorResponse.js'
 import Cars from '../models/carModel.js'
 
-// @desc    Fetch all products
-// @route   GET /api/products
-// @access  Public
+
 const getCars = asyncHandler(async (req, res) => {
   const cars = await Cars.find()
   if (!cars) {
