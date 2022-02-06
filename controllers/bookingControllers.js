@@ -1,4 +1,5 @@
 import Bookings from '../models/bookingModel.js'
+import ErrorResponse from '../utils/errorResponse.js'
 import Cars from '../models/carModel.js'
 import asyncHandler from 'express-async-handler'
 import Stripe from 'stripe'
@@ -7,9 +8,7 @@ const stripe = Stripe(
   'sk_test_51K8gdwLv5rAyPDp0EkX3MKQC2NLSLQLkoLyGwD6m0XTPqvXY4vhQz1dH8CKqyd9Q3N3gvbiFurW7VCthruw3gPgW007YxLRO3B'
 )
 
-
 const createBooking = asyncHandler(async (req, res) => {
-
   try {
     const customer = await stripe.customers.create({
       email: req.body.token.email,
@@ -33,7 +32,7 @@ const createBooking = asyncHandler(async (req, res) => {
       const newbooking = new Bookings(req.body)
       await newbooking.save()
       const car = await Cars.findOne({ _id: req.body.car })
-      
+
       car.bookedTimeSlots.push(req.body.bookedTimeSlots)
 
       await car.save()
@@ -45,7 +44,36 @@ const createBooking = asyncHandler(async (req, res) => {
     console.log(error)
     return res.status(400).json(error)
   }
-  
 })
 
-export { createBooking }
+const getAllBookings = asyncHandler(async (req, res) => {
+  const bookings = await Bookings.find()
+  if (!bookings) {
+    return next(new ErrorResponse(`Bookings not found`, 404))
+  }
+  res.status(200).json(bookings)
+})
+
+// @desc Delete a product
+// @route DELETE /api/products/:id
+// @access private/admin
+const deleteBooking = asyncHandler(async (req, res, next) => {
+  const booking = await Bookings.findById(req.params.id)
+  if (booking) {
+    await booking.remove()
+    res.json({ message: 'Booking is removed' })
+  } else {
+    return next(new ErrorResponse('Booking not found', 404))
+  }
+})
+
+const singleBooking = asyncHandler(async (req, res, next) => {
+  const booking = await Bookings.findById(req.params.id).exec()
+  if (!booking) {
+    return next(
+      new ErrorResponse(`Booking not found with id of ${req.params.id}`, 404)
+    )
+  }
+  res.status(200).json(booking)
+})
+export { createBooking, getAllBookings, deleteBooking, singleBooking }
