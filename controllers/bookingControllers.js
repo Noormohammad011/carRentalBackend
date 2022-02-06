@@ -47,7 +47,7 @@ const createBooking = asyncHandler(async (req, res) => {
 })
 
 const getAllBookings = asyncHandler(async (req, res) => {
-  const bookings = await Bookings.find()
+  const bookings = await Bookings.find().populate('car')
   if (!bookings) {
     return next(new ErrorResponse(`Bookings not found`, 404))
   }
@@ -68,6 +68,7 @@ const deleteBooking = asyncHandler(async (req, res, next) => {
 })
 
 const singleBooking = asyncHandler(async (req, res, next) => {
+  
   const booking = await Bookings.findById(req.params.id).exec()
   if (!booking) {
     return next(

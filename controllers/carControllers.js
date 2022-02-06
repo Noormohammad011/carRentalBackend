@@ -28,9 +28,11 @@ const getCar = asyncHandler(async (req, res, next) => {
 
 const createCar = asyncHandler(async (req, res) => {
 
-  const car = await Cars.create(req.body)
+ const newcar = new Cars(req.body)
+ await newcar.save()
+ res.send('Car added successfully')
 
-  res.status(201).json(car)
+  
 })
 
 // @desc Delete a product

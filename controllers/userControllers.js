@@ -37,6 +37,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      isAdmin: user.isAdmin,
       token: generateToken(user._id),
     })
   } else {
@@ -58,6 +59,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      isAdmin: user.isAdmin,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       token: generateToken(user._id),
@@ -150,7 +152,7 @@ const getUserById = asyncHandler(async (req, res) => {
 // @desc    Update user
 // @route   PUT /api/users/:id
 // @access  Private/Admin
-const updateUser = asyncHandler(async (req, res, next) => {
+const updateUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id)
 
   if (user) {
@@ -164,10 +166,11 @@ const updateUser = asyncHandler(async (req, res, next) => {
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
-      isAdmin: updatedUser.isAdmin,
+      isAdmin: Boolean(updatedUser.isAdmin),
     })
   } else {
-   return next(new ErrorResponse('User not found', 404))
+    res.status(404)
+    throw new Error('User not found')
   }
 })
 
