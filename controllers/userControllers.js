@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler'
-import ErrorResponse from '../utils/errorResponse.js'
+
 import User from '../models/userModel.js'
 import generateToken from '../utils/generateToken.js'
 
@@ -9,22 +9,12 @@ import generateToken from '../utils/generateToken.js'
 
 const registerUser = asyncHandler(async (req, res, next) => {
   const { name, email, password } = req.body
-  // validation
-  if (!name) {
-    return next(new ErrorResponse(`Name is required`, 400))
-  }
-  if (!password || password.length < 6) {
-    return next(
-      new ErrorResponse(
-        `Password is required and should be min 6 characters long`,
-        400
-      )
-    )
-  }
 
-  let userExist = await User.findOne({ email }).exec()
-  if (userExist) {
-    return next(new ErrorResponse(`Email is taken`, 400))
+  const userExists = await User.findOne({ email })
+
+  if (userExists) {
+    res.status(400)
+    throw new Error('User already exists')
   }
 
   const user = await User.create({
@@ -32,6 +22,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     email,
     password,
   })
+
   if (user) {
     res.status(201).json({
       _id: user._id,
@@ -41,7 +32,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
       token: generateToken(user._id),
     })
   } else {
-    return next(new ErrorResponse(`Invalid user data`, 400))
+    res.status(400)
+    throw new Error('Invalid user data')
   }
 })
 
@@ -60,19 +52,18 @@ const loginUser = asyncHandler(async (req, res, next) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
       token: generateToken(user._id),
     })
   } else {
-    return next(new ErrorResponse('Invalid email or password', 401))
+    res.status(401)
+    throw new Error('Invalid email or password')
   }
 })
 
 // @desc    Get user profile
 // @route   GET /api/users/profile
 // @access  Private
-const getUserProfile = asyncHandler(async (req, res,next) => {
+const getUserProfile = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user._id)
 
   if (user) {
@@ -83,7 +74,8 @@ const getUserProfile = asyncHandler(async (req, res,next) => {
       isAdmin: user.isAdmin,
     })
   } else {
-   return next(new ErrorResponse('User not found', 404))
+    res.status(404)
+    throw new Error('User not found')
   }
 })
 
@@ -110,7 +102,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       token: generateToken(updatedUser._id),
     })
   } else {
-     return next(new ErrorResponse('Invalid email or password', 404))
+    res.status(404)
+    throw new Error('User not found')
   }
 })
 
@@ -125,7 +118,7 @@ const getUsers = asyncHandler(async (req, res) => {
 // @desc    Delete user
 // @route   Delete /api/users/:id
 // @access  Private/Admin
-const deleteUser = asyncHandler(async (req, res,next) => {
+const deleteUser = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id)
   if (user) {
     await user.remove()
@@ -133,7 +126,8 @@ const deleteUser = asyncHandler(async (req, res,next) => {
       message: 'User removed',
     })
   } else {
-    return next(new ErrorResponse('User not found', 404))
+    res.status(404)
+    throw new Error('User not found')
   }
 })
 
@@ -145,7 +139,8 @@ const getUserById = asyncHandler(async (req, res) => {
   if (user) {
     res.json(user)
   } else {
-    return next(new ErrorResponse('User not found', 404))
+    res.status(404)
+    throw new Error('User not found')
   }
 })
 
@@ -158,7 +153,7 @@ const updateUser = asyncHandler(async (req, res) => {
   if (user) {
     user.name = req.body.name || user.name
     user.email = req.body.email || user.email
-    user.isAdmin = req.body.isAdmin || user.isAdmin
+    user.isAdmin = req.body.isAdmin
 
     const updatedUser = await user.save()
 
@@ -166,16 +161,13 @@ const updateUser = asyncHandler(async (req, res) => {
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
-      isAdmin: Boolean(updatedUser.isAdmin),
+      isAdmin: updatedUser.isAdmin,
     })
   } else {
-    res.status(404).send('User not found')
-    // throw new Error('User not found')
+    res.status(404)
+    throw new Error('User not found')
   }
 })
-
-
-
 
 export {
   registerUser,

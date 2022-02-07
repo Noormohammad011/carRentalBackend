@@ -1,5 +1,4 @@
 import Bookings from '../models/bookingModel.js'
-import ErrorResponse from '../utils/errorResponse.js'
 import Cars from '../models/carModel.js'
 import asyncHandler from 'express-async-handler'
 import Stripe from 'stripe'
@@ -49,7 +48,9 @@ const createBooking = asyncHandler(async (req, res) => {
 const getAllBookings = asyncHandler(async (req, res) => {
   const bookings = await Bookings.find().populate('car')
   if (!bookings) {
-    return next(new ErrorResponse(`Bookings not found`, 404))
+    res.status(404)
+    throw new Error('Bookings not found')
+   
   }
   res.status(200).json(bookings)
 })
@@ -63,7 +64,8 @@ const deleteBooking = asyncHandler(async (req, res, next) => {
     await booking.remove()
     res.json({ message: 'Booking is removed' })
   } else {
-    return next(new ErrorResponse('Booking not found', 404))
+    res.status(404)
+    throw new Error('Bookings not found')
   }
 })
 
@@ -71,9 +73,8 @@ const singleBooking = asyncHandler(async (req, res, next) => {
   
   const booking = await Bookings.findById(req.params.id).exec()
   if (!booking) {
-    return next(
-      new ErrorResponse(`Booking not found with id of ${req.params.id}`, 404)
-    )
+    res.status(404)
+    throw new Error('Bookings not found')
   }
   res.status(200).json(booking)
 })

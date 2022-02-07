@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 
 const { Schema } = mongoose
 
@@ -7,53 +7,39 @@ const userSchema = new Schema(
   {
     name: {
       type: String,
-      required: [true, 'Please add a name'],
-      unique: true,
-      trim: true,
-      maxlength: [50, 'Name can not be more than 50 characters'],
+      required: true,
     },
     email: {
       type: String,
-      trim: true,
-      match: [
-        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-        'Please add a valid email',
-      ],
+      required: true,
       unique: true,
     },
     password: {
       type: String,
       required: true,
-      min: 6,
-      max: 64,
     },
     isAdmin: {
       type: Boolean,
-      default: false,
       required: true,
+      default: false,
     },
   },
-  { timestamps: true }
-)
-
-userSchema.pre('save', function (next) {
-  let user = this
-
-  if (user.isModified('password')) {
-    return bcrypt.hash(user.password, 12, function (err, hash) {
-      if (err) {
-        return next(err)
-      }
-      user.password = hash
-      return next()
-    })
-  } else {
-    return next()
+  {
+    timestamps: true,
   }
-})
+)
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password)
 }
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    next()
+  }
+
+  const salt = await bcrypt.genSalt(10)
+  this.password = await bcrypt.hash(this.password, salt)
+})
 
 export default mongoose.model('User', userSchema)

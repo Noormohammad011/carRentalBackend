@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken'
 import asyncHandler from 'express-async-handler'
-import ErrorResponse from '../utils/errorResponse.js'
 import User from '../models/userModel.js'
 // req.user
 export const protect = asyncHandler(async (req, res, next) => {
@@ -29,10 +28,10 @@ export const protect = asyncHandler(async (req, res, next) => {
 })
 
 export const admin = (req, res, next) => {
-  if (req.user && req.user.isAdmin) {
-    next()
-  } else {
-    // return next(new ErrorResponse('Not authorized as an admin', 401))
-    return res.send('Not autorized as an admin')
-  }
+ if (req.user && req.user.isAdmin) {
+   next()
+ } else {
+   res.status(401)
+   throw new Error('Not authorized as an admin')
+ }
 }

@@ -11,7 +11,6 @@ import userRoutes from './routes/userRoutes.js'
 import bookingRoutes from './routes/bookcarRoutes.js'
 import { errorHandler, notFound } from './middleware/errorMiddleware.js'
 
-
 // load env vars
 dotenv.config()
 

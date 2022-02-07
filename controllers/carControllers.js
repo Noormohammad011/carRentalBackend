@@ -1,12 +1,14 @@
 import asyncHandler from 'express-async-handler'
-import ErrorResponse from '../utils/errorResponse.js'
+
 import Cars from '../models/carModel.js'
 
 
 const getCars = asyncHandler(async (req, res, next) => {
   const cars = await Cars.find()
   if (!cars) {
-    return next(new ErrorResponse(`Cars not found`, 404))
+    res.status(404)
+    throw new Error('Cars not found')
+   
   }
   res.status(200).json(cars)
 })
@@ -15,9 +17,8 @@ const getCar = asyncHandler(async (req, res, next) => {
   const car = await Cars.findById(req.params.id)
 
   if (!car) {
-    return next(
-      new ErrorResponse(`car not found with id of ${req.params.id}`, 404)
-    )
+    res.status(404)
+    throw new Error('Cars not found')
   }
   res.status(200).json(car)
 })
@@ -30,7 +31,7 @@ const createCar = asyncHandler(async (req, res) => {
 
  const newcar = new Cars(req.body)
  await newcar.save()
- res.send('Car added successfully')
+ res.status(200).json(newcar)
 
   
 })
@@ -44,7 +45,8 @@ const deleteCar = asyncHandler(async (req, res,next) => {
     await car.remove()
     res.json({ message: 'Car is removed' })
   } else {
-     return next(new ErrorResponse('Car not found', 404))
+    res.status(404)
+    throw new Error('Cars not found')
   }
 })
 
@@ -59,9 +61,8 @@ const updateCar = asyncHandler(async (req, res, next) => {
     runValidators: true,
   })
  if (!car) {
-   return next(
-     new ErrorResponse(`Car not found with id of ${req.params.id}`, 404)
-   )
+  res.status(404)
+  throw new Error('Cars not found')
  }
 
   res.status(200).json(car)
