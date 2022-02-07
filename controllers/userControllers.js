@@ -169,8 +169,8 @@ const updateUser = asyncHandler(async (req, res) => {
       isAdmin: Boolean(updatedUser.isAdmin),
     })
   } else {
-    res.status(404)
-    throw new Error('User not found')
+    res.status(404).send('User not found')
+    // throw new Error('User not found')
   }
 })
 
