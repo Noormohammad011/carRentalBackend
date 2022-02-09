@@ -1,14 +1,21 @@
 import express from 'express'
-import { createBooking, deleteBooking, getAllBookings, singleBooking } from '../controllers/bookingControllers.js'
+import {
+  createBooking,
+  deleteBooking,
+  getAllBookings,
+  singleBooking,
+  updateBooking,
+} from '../controllers/bookingControllers.js'
 import { admin, protect } from '../middleware/userMiddleware.js'
 
 const router = express.Router()
 
-router.route('/bookcar').post(createBooking).get(protect, admin, getAllBookings)
+router.route('/bookcar').post(createBooking).get(protect, getAllBookings)
 router
   .route('/:id')
   .delete(protect, admin, deleteBooking)
-  .get(singleBooking, protect)
+  .get(protect, admin, singleBooking)
+  .put(protect, admin, updateBooking)
 
 
 export default router

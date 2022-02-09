@@ -50,7 +50,6 @@ const getAllBookings = asyncHandler(async (req, res) => {
   if (!bookings) {
     res.status(404)
     throw new Error('Bookings not found')
-   
   }
   res.status(200).json(bookings)
 })
@@ -70,7 +69,6 @@ const deleteBooking = asyncHandler(async (req, res, next) => {
 })
 
 const singleBooking = asyncHandler(async (req, res, next) => {
-  
   const booking = await Bookings.findById(req.params.id).exec()
   if (!booking) {
     res.status(404)
@@ -78,4 +76,23 @@ const singleBooking = asyncHandler(async (req, res, next) => {
   }
   res.status(200).json(booking)
 })
-export { createBooking, getAllBookings, deleteBooking, singleBooking }
+const updateBooking = asyncHandler(async (req, res, next) => {
+  const booking = await Bookings.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  })
+  if (!booking) {
+    res.status(404)
+    throw new Error('Bookings not found')
+  }
+
+  res.status(200).json(booking)
+})
+
+export {
+  createBooking,
+  getAllBookings,
+  deleteBooking,
+  singleBooking,
+  updateBooking,
+}

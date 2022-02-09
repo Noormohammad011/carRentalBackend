@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
 
-
 const bookingSchema = mongoose.Schema(
   {
     user: {
@@ -17,6 +16,11 @@ const bookingSchema = mongoose.Schema(
     totalAmount: { type: Number },
     transactionId: { type: String },
     driverRequired: { type: Boolean },
+    isDelivered: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
   },
   {
     timestamps: true,
